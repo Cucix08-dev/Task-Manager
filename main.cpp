@@ -297,11 +297,13 @@ string toLowerCase(const string &str) {
 }
 
 
-int searchIndex(const vector<string>& titleArr, const string& searchStr){
-    for (int i = 0; i < titleArr.size(); i++){
-        if (titleArr.at(i) == searchStr){
-            return i;
-        }
+int searchIndex(const vector<string>& titleArr, const string& searchStr) {
+    string target = toLowerCase(searchStr);
+
+    for (size_t i = 0; i < titleArr.size(); i++) {
+        if (toLowerCase(titleArr[i]) == target)
+            return static_cast<int>(i);
     }
+
     return -1;
 }
