@@ -43,7 +43,18 @@ class TaskManager{
             }
             return str;
         }
-    
+
+        void checkTask(string task){
+            task = toLowerCase(task);
+            if (tasks.count(task)){
+                tasks[task] = true;
+                cout << "Task was checked successfully ✓" << endl;
+            }
+            else {
+                cout << "Task doesn't exist ✗" << endl;
+            }
+        };
+
 };
 
 int main(){
