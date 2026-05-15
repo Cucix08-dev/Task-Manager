@@ -81,8 +81,8 @@ class Task{
 
         string getExpirationDate(){
             expirationDate = 
-                to_string(expirationDay) + 
-                to_string(expirationMonth) + 
+                to_string(expirationDay) + "-" +
+                to_string(expirationMonth) + "-" +
                 to_string(expirationYear);
 
             return expirationDate;
