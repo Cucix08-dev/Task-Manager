@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <fstream>
+#include <filesystem>
 using namespace std;
 
 string toLowerCase(const string &str);
@@ -12,20 +14,46 @@ class Task{
         string name;
         string desc;
         int priority;
+
         string creationDate;
+        int creationDay;
+        int creationMonth;
+        int creationYear;
         int creationDateSum;
+
         string expirationDate;
+        int expirationDay;
+        int expirationMonth;
+        int expirationYear;
         int expirationDateSum;
 
     public:
-        Task(string t, string d, int p, string cD, int cDS, string eD, int eDS){
-            name = t;
+        Task(
+            string n, string d, int p, 
+            int cDay, int cMonth, int cYear,
+            int eDay, int eMonth, int eYear
+        ){
+            name = n;
             desc = d;
             priority = p;
-            creationDate = cD;
-            creationDateSum = cDS;
-            expirationDate = eD;
-            expirationDateSum = eDS;
+            
+            creationDay = cDay;
+            creationMonth = cMonth;
+            creationYear = cYear;
+            creationDate = 
+                to_string(cDay) + "-" + 
+                to_string(cMonth) + "-" +
+                to_string(cYear);
+            creationDateSum = cDay + cMonth + cYear;
+
+            expirationDay = eDay;
+            expirationMonth = eMonth;
+            expirationYear = eYear;
+            expirationDate = 
+                to_string(eDay) + "-" + 
+                to_string(eMonth) + "-" + 
+                to_string(eYear);
+            expirationDateSum = eDay + eMonth + eYear;
         }
 
         /* GET E SET */
@@ -34,18 +62,54 @@ class Task{
         string getName(){return name;}
         string getDesc(){return desc;}
         int getPriority(){return priority;}
-        string getCreationDate(){return creationDate;}
-        int getCreationDateSum(){return creationDateSum;}
-        string getExpirationDate(){return expirationDate;}
-        int getExpirationDateSum(){return expirationDateSum;}
+
+        string getCreationDate(){
+            creationDate =
+                to_string(creationDay) + "-" +
+                to_string(creationMonth) + "-" +
+                to_string(creationYear);
+
+            return creationDate;
+        }
+        int getCreationDateSum(){
+            creationDateSum = creationDay + creationMonth + creationYear;
+            return creationDateSum;
+        }
+        int getCreationDay(){return creationDay;}
+        int getCreationMonth(){return creationMonth;}
+        int getCreationYear(){return creationYear;}
+
+        string getExpirationDate(){
+            expirationDate = 
+                to_string(expirationDay) + 
+                to_string(expirationMonth) + 
+                to_string(expirationYear);
+
+            return expirationDate;
+        }
+        int getExpirationDay(){return expirationDay;}
+        int getExpirationMonth(){return expirationMonth;}
+        int getExpirationYear(){return expirationYear;}
+        int getExpirationDateSum(){
+            expirationDateSum = expirationDay + expirationMonth + expirationYear;
+            return expirationDateSum;
+        }
 
         //SETS
         void setName(string x){name=x;}
         void setDesc(string x){desc=x;}
         void setPriority(int x){priority=x;}
+
         void setCreationDate(string x){creationDate=x;}
+        void setCreationDay(int x){creationDay=x;}
+        void setCreationMonth(int x){creationMonth=x;}
+        void setCreationYear(int x){creationYear=x;}
         void setCreationDateSum(int x){creationDateSum=x;}
+
         void setExpirationDate(string x){expirationDate=x;}
+        void setExpirationDay(int x){expirationDay=x;}
+        void setExpirationMonth(int x){expirationMonth=x;}
+        void setExpirationYear(int x){expirationYear=x;}
         void setExpirationDateSum(int x){expirationDateSum=x;}
 
 };
@@ -126,8 +190,11 @@ class TaskManager{
                 bool valid = sum > tasks.at(index).getCreationDateSum();
                 
                 if (valid){
+                    tasks.at(index).setExpirationDay(day);
+                    tasks.at(index).setExpirationMonth(month);
+                    tasks.at(index).setExpirationYear(year);
                     tasks.at(index).setExpirationDateSum(sum);
-                    tasks.at(index).setExpirationDate(to_string(day) + " - " + to_string(month) + " - " + to_string(year));
+                    tasks.at(index).setExpirationDate(to_string(day) + "-" + to_string(month) + "-" + to_string(year));
                 }
             }
         }
@@ -173,10 +240,75 @@ class TaskManager{
             
         }
 
+        void generateCSV(ofstream& out){
+            string csvStr = "";
+
+            for (int i = 0; i < tasks.size(); i++){
+                csvStr += 
+                    tasks.at(i).getName() + ";" + 
+                    tasks.at(i).getDesc() + ";" + 
+                    to_string(tasks.at(i).getPriority()) + ";" + 
+
+                    to_string(tasks.at(i).getCreationDay()) + ";" +
+                    to_string(tasks.at(i).getCreationMonth()) + ";" +
+                    to_string(tasks.at(i).getCreationYear()) + ";" +
+
+                    to_string(tasks.at(i).getExpirationDay()) + ";" +
+                    to_string(tasks.at(i).getExpirationMonth()) + ";" +
+                    to_string(tasks.at(i).getExpirationYear()) + "\n";
+            }
+
+            out << csvStr;
+        }
+
 };
 
 int main(){
     TaskManager tasks;
+
+    ifstream taskIn("tasks.csv");
+    ofstream taskOut("tasks.csv", ios::app);
+
+
+    bool exist = true;
+
+    if (!taskOut){
+        cerr << "The file tasks.csv doesn't exist.\n";
+        exist = false;
+    }
+    if (!taskIn){
+        cerr << "The file tasks.csv doesn't exist.\n";
+        exist = false;
+    }
+    else{
+        string line;
+
+        while (getline(taskIn, line)) {
+            vector<string> camp;
+            stringstream ss(line);
+            string campo;
+
+            while (getline(ss, campo, ';')) {
+                camp.push_back(campo);
+            }
+
+            if (camp.size() == 9) {
+                tasks.addTask(Task(
+                    camp[0],
+                    camp[1],
+                    stoi(camp[2]),
+                    stoi(camp[3]),
+                    stoi(camp[4]),
+                    stoi(camp[5]),
+                    stoi(camp[6]),
+                    stoi(camp[7]),
+                    stoi(camp[8])
+                ));
+            }
+        }
+
+
+    }
 
     bool running = true;
 
@@ -186,21 +318,22 @@ int main(){
 
         int scelta;
 
-        cout << "--- Insert the choise ---\n";
-        cout << "1) Add task\n";
-        cout << "2) Modify task\n";
-        cout << "3) Remove task\n";        
-        cout << "4) Print all tasks\n";
-        cout << "5) Exit\n";
+        cout << "--- Insert the choise ---\n"
+             << "1) Add task\n"
+             << "2) Modify task\n"
+             << "3) Remove task\n"
+             << "4) Print all tasks\n"
+             << "5) Exit\n"
+             << "\nInput:";
 
         cin >> scelta;
         string task;
 
         string name, desc, creationDate, expirationDate;
-        int priority, day, month, year;
+        int priority, eDay, eMonth, eYear;
 
         switch (scelta){
-            case 1:
+            case 1: {
                 cout << "\n--- ADD ---\n";
 
                 cout << "\nInsert name: ";
@@ -213,35 +346,41 @@ int main(){
                 cout << "\nInsert priority: ";
                 cin >> priority;
 
-                int creationDateSum = t->tm_mday + t->tm_mon + t->tm_year;
-                creationDate = to_string(t->tm_mday) + " - " + to_string(t->tm_mon) + " - " + to_string(t->tm_year);
+                int cDay = t->tm_mday;
+                int cMonth = t->tm_mon;
+                int cYear = t->tm_year;
+                int creationDateSum = cDay + cMonth + cYear;
+                creationDate = 
+                    to_string(cDay) + "-" + 
+                    to_string(cMonth) + "-" + 
+                    to_string(cYear);
 
                 do{
                     cout << "\nInsert month number: ";
-                    cin >> month;
-                } while (month < 1 || month > 12);
+                    cin >> eMonth;
+                } while (eMonth < 1 || eMonth > 12);
 
                 int maxDay = 31;
-                if (month == 4 || month == 6 || month == 9 || month == 11)
+                if (eMonth == 4 || eMonth == 6 || eMonth == 9 || eMonth == 11)
                     maxDay = 30;
-                else if (month == 2)
+                else if (eMonth == 2)
                     maxDay = 28;
 
                 do{
                     cout << "\nInsert day: ";
-                    cin >> day;
-                } while (day < 1 || day > maxDay);
+                    cin >> eDay;
+                } while (eDay < 1 || eDay > maxDay);
 
                 cout << "\nInsert year: ";
-                cin >> year;
+                cin >> eYear;
 
-                int expirationDateSum = day + month + year;
+                int expirationDateSum = eDay + eMonth + eYear;
                 bool valid = expirationDateSum > creationDateSum;
                 
                 if (valid){
-                    expirationDate = to_string(day) + " - " + 
-                                     to_string(month) + " - " + 
-                                     to_string(year);
+                    expirationDate = to_string(eDay) + "-" + 
+                                     to_string(eMonth) + "-" + 
+                                     to_string(eYear);
                 }
                 else{
                     expirationDate = creationDate;
@@ -251,41 +390,50 @@ int main(){
                     name,
                     desc,
                     priority,
-                    creationDate,
-                    creationDateSum,
-                    expirationDate,
-                    expirationDateSum
+                    cDay,
+                    cMonth,
+                    cYear,
+                    eDay,
+                    eMonth,
+                    eYear
                 ));
                 
                 break;
-            
-            case 2:
+            }
+
+            case 2: {
                 cout << "\n--- MODIFY ---\n";
                 cout << "Insert the name of task: ";
                 cin.ignore();
                 getline(cin, task);
                 tasks.modifyTask(task);
                 break;
+            }
 
-            case 3:
+            case 3: {
                 cout << "\n--- REMOVE ---\n";
                 cout << "Insert the name of task: ";
                 cin.ignore();
                 getline(cin, task);
                 tasks.removeTask(task);
                 break;
+            }
 
-            case 4:
+            case 4: {
                 cout << "\n--- TASKS ---\n";
                 tasks.toString();
                 break;
-            
-            default:
+            }
+
+            default: {
                 running = false;
                 break;
+            }
         }
     }
     
+    tasks.generateCSV(taskOut);
+
     return 0;
 }
 
