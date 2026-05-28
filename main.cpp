@@ -8,6 +8,7 @@ using namespace std;
 
 string toLowerCase(const string &str);
 int searchIndex(const vector<string>& titleArr, const string& searchStr);
+int dateToInt(int d, int m, int y);
 
 class Task{
     private:
@@ -44,7 +45,7 @@ class Task{
                 to_string(cDay) + "-" + 
                 to_string(cMonth) + "-" +
                 to_string(cYear);
-            creationDateSum = cDay + cMonth + cYear;
+            creationDateSum = dateToInt(creationDay,creationMonth,creationYear);
 
             expirationDay = eDay;
             expirationMonth = eMonth;
@@ -53,7 +54,7 @@ class Task{
                 to_string(eDay) + "-" + 
                 to_string(eMonth) + "-" + 
                 to_string(eYear);
-            expirationDateSum = eDay + eMonth + eYear;
+            expirationDateSum = dateToInt(expirationDay,expirationMonth,expirationYear);
         }
 
         /* GET E SET */
@@ -72,7 +73,7 @@ class Task{
             return creationDate;
         }
         int getCreationDateSum(){
-            creationDateSum = creationDay + creationMonth + creationYear;
+            creationDateSum = dateToInt(creationDay,creationMonth,creationYear);
             return creationDateSum;
         }
         int getCreationDay(){return creationDay;}
@@ -91,7 +92,7 @@ class Task{
         int getExpirationMonth(){return expirationMonth;}
         int getExpirationYear(){return expirationYear;}
         int getExpirationDateSum(){
-            expirationDateSum = expirationDay + expirationMonth + expirationYear;
+            expirationDateSum = dateToInt(expirationDay, expirationMonth, expirationYear);
             return expirationDateSum;
         }
 
@@ -140,7 +141,7 @@ class TaskManager{
             if (action == "name"){
                 string name;
                 cout << "\nInsert name: ";
-                cin.ignore();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 getline(cin,name);
                 tasks.at(index).setName(name);
             }
@@ -148,7 +149,7 @@ class TaskManager{
             else if (action == "desc") {
                 string desc;
                 cout << "\nInsert description: ";
-                cin.ignore();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 getline(cin,desc);
                 tasks.at(index).setDesc(desc);
             }
@@ -163,7 +164,7 @@ class TaskManager{
             else if (action == "expirationdate"){
                 int month;
                 do {
-                    cout << "\nInsert month: ";
+                    cout << "\nInsert expiration month number: ";
                     cin >> month;
                 } while (month < 1 || month > 12);
 
@@ -177,16 +178,19 @@ class TaskManager{
                 int day;
 
                 do {
-                    cout << "\nInsert day: ";
+                    cout << "\nInsert expiration day: ";
                     cin >> day;
                 } while (day < 1 || day > maxDay);
 
 
                 int year;
-                cout << "\nInsert year: ";
-                cin >> year;
+                do
+                {
+                    cout << "\nInsert expiration year: ";
+                    cin >> year;
+                } while (year>tasks.at(index).getCreationYear());
 
-                int sum = day + month + year;
+                int sum = dateToInt(day,month,year);
                 bool valid = sum > tasks.at(index).getCreationDateSum();
                 
                 if (valid){
@@ -219,6 +223,13 @@ class TaskManager{
         }
 
         void toString(){
+            cout << endl 
+                     << "name "
+                     << "desc "
+                     << "prio "
+                     << "expirDate "
+                     << "creatDate ";
+                     
             for (int i = 0; i < tasks.size(); i++){
                 cout << endl 
                      << tasks.at(i).getName() << " "
@@ -267,7 +278,7 @@ int main(){
     TaskManager tasks;
 
     ifstream taskIn("tasks.csv");
-    ofstream taskOut("tasks.csv", ios::app);
+    ofstream taskOut("tasks.csv");
 
 
     bool exist = true;
@@ -337,7 +348,7 @@ int main(){
                 cout << "\n--- ADD ---\n";
 
                 cout << "\nInsert name: ";
-                cin.ignore();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 getline(cin,name);
 
                 cout << "\nInsert description: ";
@@ -347,16 +358,16 @@ int main(){
                 cin >> priority;
 
                 int cDay = t->tm_mday;
-                int cMonth = t->tm_mon;
-                int cYear = t->tm_year;
-                int creationDateSum = cDay + cMonth + cYear;
+                int cMonth = t->tm_mon + 1;
+                int cYear = t->tm_year + 1900;
+                int creationDateSum = dateToInt(cDay,cMonth,cYear);
                 creationDate = 
                     to_string(cDay) + "-" + 
                     to_string(cMonth) + "-" + 
                     to_string(cYear);
 
                 do{
-                    cout << "\nInsert month number: ";
+                    cout << "\nInsert expiration month number: ";
                     cin >> eMonth;
                 } while (eMonth < 1 || eMonth > 12);
 
@@ -367,14 +378,17 @@ int main(){
                     maxDay = 28;
 
                 do{
-                    cout << "\nInsert day: ";
+                    cout << "\nInsert expiration day: ";
                     cin >> eDay;
                 } while (eDay < 1 || eDay > maxDay);
 
-                cout << "\nInsert year: ";
-                cin >> eYear;
+                do
+                {
+                    cout << "\nInsert expiration year: ";
+                    cin >> eYear;
+                } while (eYear<cYear);
 
-                int expirationDateSum = eDay + eMonth + eYear;
+                int expirationDateSum = dateToInt(eDay,eMonth,eYear);
                 bool valid = expirationDateSum > creationDateSum;
                 
                 if (valid){
@@ -404,7 +418,7 @@ int main(){
             case 2: {
                 cout << "\n--- MODIFY ---\n";
                 cout << "Insert the name of task: ";
-                cin.ignore();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 getline(cin, task);
                 tasks.modifyTask(task);
                 break;
@@ -413,7 +427,7 @@ int main(){
             case 3: {
                 cout << "\n--- REMOVE ---\n";
                 cout << "Insert the name of task: ";
-                cin.ignore();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 getline(cin, task);
                 tasks.removeTask(task);
                 break;
@@ -454,4 +468,8 @@ int searchIndex(const vector<string>& titleArr, const string& searchStr) {
     }
 
     return -1;
+}
+
+int dateToInt(int d, int m, int y) {
+    return y * 10000 + m * 100 + d;
 }
