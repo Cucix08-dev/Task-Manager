@@ -4,6 +4,8 @@
 #include <ctime>
 #include <fstream>
 #include <filesystem>
+#include <unordered_map>
+#include <functional>
 using namespace std;
 
 string toLowerCase(const string &str);
@@ -137,28 +139,30 @@ class TaskManager{
 
             action = toLowerCase(action);
 
-            if (action.find("name") != string::npos) {
+            unordered_map<string, function<void()>>commands;
+
+            commands["name"] = [&]() {
                 string name;
                 cout << "\nInsert name: ";
                 getline(cin, name);
                 tasks.at(index).setName(name);
-            }
+            };
 
-            if (action.find("desc") != string::npos) {
+            commands["desc"] = [&]() {
                 string desc;
                 cout << "\nInsert description: ";
                 getline(cin, desc);
                 tasks.at(index).setDesc(desc);
-            }
+            };
 
-            if (action.find("prio") != string::npos) {
+            commands["prio"] = [&]() {
                 int priority;
                 cout << "\nInsert priority: ";
                 cin >> priority;
                 tasks.at(index).setPriority(priority);
-            }
+            };
 
-            if (action.find("date") != string::npos) {
+            commands["date"] = [&]() {
                 int month;
                 do {
                     cout << "\nInsert expiration month number: ";
@@ -196,6 +200,12 @@ class TaskManager{
                     tasks.at(index).setExpirationYear(year);
                     tasks.at(index).setExpirationDateSum(sum);
                     tasks.at(index).setExpirationDate(to_string(day) + "-" + to_string(month) + "-" + to_string(year));
+                }
+            };
+
+            for (auto& [key, func] : commands) {
+                if (action.find(key) != string::npos) {
+                    func();
                 }
             }
         }
