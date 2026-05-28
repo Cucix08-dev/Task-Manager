@@ -406,7 +406,8 @@ int main(){
                     eMonth,
                     eYear
                 ));
-                
+                ofstream taskOut("tasks.csv", ios::trunc);
+                tasks.generateCSV(taskOut);
                 break;
             }
 
@@ -416,6 +417,8 @@ int main(){
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 getline(cin, task);
                 tasks.modifyTask(task);
+                ofstream taskOut("tasks.csv", ios::trunc);
+                tasks.generateCSV(taskOut);
                 break;
             }
 
@@ -425,6 +428,8 @@ int main(){
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 getline(cin, task);
                 tasks.removeTask(task);
+                ofstream taskOut("tasks.csv", ios::trunc);
+                tasks.generateCSV(taskOut);
                 break;
             }
 
