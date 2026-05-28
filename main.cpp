@@ -127,41 +127,38 @@ class TaskManager{
         void modify(int index){
             string action;
             
-            cout << "\n-- MODIFY -- \n"
-                 << "\nPossibles commands: \n"
+            cout << "\nCommands: \n"
                  << "name \n"
                  << "desc \n"
                  << "priority \n"
                  << "expirationdate \n"
                  << "\nInput: ";
-            cin >> action;
+            getline(cin,action);
 
             action = toLowerCase(action);
 
-            if (action == "name"){
+            if (action.find("name") != string::npos) {
                 string name;
                 cout << "\nInsert name: ";
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                getline(cin,name);
+                getline(cin, name);
                 tasks.at(index).setName(name);
             }
 
-            else if (action == "desc") {
+            if (action.find("desc") != string::npos) {
                 string desc;
                 cout << "\nInsert description: ";
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                getline(cin,desc);
+                getline(cin, desc);
                 tasks.at(index).setDesc(desc);
             }
 
-            else if (action == "priority") {
+            if (action.find("prio") != string::npos) {
                 int priority;
                 cout << "\nInsert priority: ";
                 cin >> priority;
                 tasks.at(index).setPriority(priority);
             }
 
-            else if (action == "expirationdate"){
+            if (action.find("date") != string::npos) {
                 int month;
                 do {
                     cout << "\nInsert expiration month number: ";
@@ -210,6 +207,9 @@ class TaskManager{
             if (exist){
                 modify(index);
             }
+            else{
+                cout << "\nThe element doesn't exist\n";
+            }
         }
         
         vector<string> getTitleArr() {
@@ -224,18 +224,17 @@ class TaskManager{
 
         void toString(){
             cout << endl 
-                     << "name "
-                     << "desc "
-                     << "prio "
-                     << "expirDate "
-                     << "creatDate ";
+                     << "name\t"
+                     << "desc\t"
+                     << "priority\t"
+                     << "creationDate\t"
+                     << "expirationDate\t\n";
                      
             for (int i = 0; i < tasks.size(); i++){
-                cout << endl 
-                     << tasks.at(i).getName() << " "
-                     << tasks.at(i).getDesc() << " "
-                     << tasks.at(i).getPriority() << " "
-                     << tasks.at(i).getCreationDate() << " "
+                cout << tasks.at(i).getName() << "\t"
+                     << tasks.at(i).getDesc() << "\t"
+                     << tasks.at(i).getPriority() << "\t\t"
+                     << tasks.at(i).getCreationDate() << "\t"
                      << tasks.at(i).getExpirationDate() 
                      << endl;
             }
@@ -275,21 +274,14 @@ class TaskManager{
 };
 
 int main(){
+    system("cls");
+
     TaskManager tasks;
 
     ifstream taskIn("tasks.csv");
-    ofstream taskOut("tasks.csv");
 
-
-    bool exist = true;
-
-    if (!taskOut){
-        cerr << "The file tasks.csv doesn't exist.\n";
-        exist = false;
-    }
     if (!taskIn){
         cerr << "The file tasks.csv doesn't exist.\n";
-        exist = false;
     }
     else{
         string line;
@@ -321,6 +313,8 @@ int main(){
 
     }
 
+    taskIn.close();
+
     bool running = true;
 
     while (running){
@@ -329,14 +323,15 @@ int main(){
 
         int scelta;
 
-        cout << "--- Insert the choise ---\n"
+        cout << "\n--- Insert the choise ---\n"
              << "1) Add task\n"
              << "2) Modify task\n"
              << "3) Remove task\n"
              << "4) Print all tasks\n"
-             << "5) Exit\n"
-             << "\nInput:";
-
+             << "5) Clear terminal\n"
+             << "6) Exit\n"
+             << "\nInput: "; 
+             
         cin >> scelta;
         string task;
 
@@ -439,6 +434,11 @@ int main(){
                 break;
             }
 
+            case 5: {
+                system("cls");
+                break;
+            }
+
             default: {
                 running = false;
                 break;
@@ -446,7 +446,9 @@ int main(){
         }
     }
     
+    ofstream taskOut("tasks.csv", ios::trunc);
     tasks.generateCSV(taskOut);
+    taskOut.close();
 
     return 0;
 }
